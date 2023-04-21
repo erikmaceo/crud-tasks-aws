@@ -1,0 +1,77 @@
+# Welcome to Serverless!
+
+
+service: aws-lambda-crud
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-east-2
+  iamRoleStatements: # Permisos de la tabla. Ya este proyecto puede acceder a TaskTable
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: # Que tabla voy a tener permisos de escribir
+        - arn:aws:dynamodb:us-east-2:489292892831:table/TaskTable
+
+
+functions:
+  hello:
+    handler: src/handler.hello
+  helloUser:
+    handler: src/handler.helloUser  
+    events:
+      - httpApi:
+          path: /user
+          method: GET
+  createTask:
+    handler: src/addTask.addTask
+    events:
+      - httpApi:
+          path: /tasks
+          method: POST
+  getTasks:
+    handler: src/getTasks.getTasks
+    events:
+      - httpApi:
+          path: /tasks
+          method: GET   
+  getOneTask:
+    handler: src/getOneTask.getOneTask
+    events:
+      - httpApi:
+          path: /tasks/{id}
+          method: get  
+  updateTask:
+    handler: src/updateTask.updateTask
+    events:
+      - httpApi:
+          path: /tasks/{id}
+          method: put  
+  deleteTask:
+    handler: src/deleteTask.deleteTask
+    events:
+      - httpApi:
+          path: /tasks/{id}
+          method: delete                         
+
+resources: 
+  Resources:  
+    TaskTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: TaskTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:  # Este es el primary key
+          - AttributeName: id 
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id  
+            KeyType: HASH
+    
+
+
+        
+
