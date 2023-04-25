@@ -1,12 +1,18 @@
 const AWS = require('aws-sdk'); // Import the AWS SDK for Node.js
 const { v4 } = require('uuid'); // Import the uuid package
+const middy = require('@middy/core'); // motor de middlewares
+const httpJsonBodyParser  = require('@middy/http-json-body-parser'); // convirtiendo string a objetos javascript
+const httpErrorHandler = require('@middy/http-error-handler')
+
 
 const addTask = async (event) => {
 
     const dynamodb = new AWS.DynamoDB.DocumentClient(); // Create a DynamoDB client service object connection
 
     //lo q voy a esperar//
-    const {title, description} = JSON.parse(event.body); // Get the title and description from the request body
+    //const {title, description} = JSON.parse(event.body); // Get the title and description from the request body using middleware..
+    const {title, description} = event.body;
+    console.log(event.body);
     const date = new Date();
     const createdAt = date.toJSON(); // Get the current date
     const id = v4(); // Generate a unique id
@@ -30,4 +36,11 @@ const addTask = async (event) => {
 
 }
 
-module.exports = { addTask }        
+
+
+module.exports = {
+    addTask : middy(addTask)
+    .use(httpJsonBodyParser())
+    .use(httpErrorHandler())
+     // Export the handler function
+ }       
