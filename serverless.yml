@@ -1,13 +1,14 @@
 # Welcome to Serverless!
 
 
+
 service: aws-lambda-crud
 
 frameworkVersion: '3'
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs16.x
   region: us-east-2
   iamRoleStatements: # Permisos de la tabla. Ya este proyecto puede acceder a TaskTable
     - Effect: Allow
@@ -15,6 +16,14 @@ provider:
         - dynamodb:*
       Resource: # Que tabla voy a tener permisos de escribir
         - arn:aws:dynamodb:us-east-2:489292892831:table/TaskTable
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: 
+        - arn:aws:dynamodb:us-east-2:489292892831:table/UserTable   
+
+plugins:
+  - serverless-offline
 
 
 functions:
@@ -55,7 +64,19 @@ functions:
     events:
       - httpApi:
           path: /tasks/{id}
-          method: delete                         
+          method: delete  
+  createUser:
+    handler: src/user/createUser.createUser
+    events:
+      - httpApi:
+          path: /v1/users
+          method: POST  
+  login:
+    handler: src/user/login.login
+    events:
+      - httpApi:
+          path: /v1/login                                       
+          method: post                               
 
 resources: 
   Resources:  
@@ -70,6 +91,17 @@ resources:
         KeySchema:
           - AttributeName: id  
             KeyType: HASH
+    UserTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UserTable
+        BillingMode: PAY_PER_REQUEST          
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH        
     
 
 
